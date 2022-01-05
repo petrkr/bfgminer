@@ -3110,7 +3110,7 @@ bool auth_stratum(struct pool *pool)
 	json_error_t err;
 	bool ret = false;
 
-	sprintf(s, "{\"id\": \"auth\", \"method\": \"mining.authorize\", \"params\": [\"%s\", \"%s\"]}",
+	sprintf(s, "{\"id\": 1, \"method\": \"mining.authorize\", \"params\": [\"%s\", \"%s\"]}",
 	        pool->rpc_user, pool->rpc_pass);
 
 	if (!stratum_send(pool, s, strlen(s)))
@@ -3128,11 +3128,14 @@ bool auth_stratum(struct pool *pool)
 			bool unknown = true;
 			val = JSON_LOADS(sret, &err);
 			json_t *j_id = json_object_get(val, "id");
+			if (json_is_number(j_id))
+			{
+				if (json_number_value(j_id) == 1)
+					break;
+			}
+
 			if (json_is_string(j_id))
 			{
-				if (!strcmp(json_string_value(j_id), "auth"))
-					break;
-				else
 				if (!strcmp(json_string_value(j_id), "xnsub"))
 					unknown = false;
 			}
